@@ -40,7 +40,7 @@ const getNodeId = () => `randomnode_${+new Date()}`;
     []
   );
   const onInit = (reactFlowInstance) =>{
-  setRfInstance();
+     setRfInstance(rfInstance);
     console.log("flow loaded:", reactFlowInstance);
   }
   const onSave = useCallback(() => {
@@ -91,7 +91,7 @@ const getNodeId = () => `randomnode_${+new Date()}`;
       onEdgesChange={onEdgesChange}
       onEdgeUpdate={onEdgeUpdate}
       onConnect={onConnect}
-      onInit={onInit}
+      onInit={setRfInstance}
       nodeTypes={nodeTypes}
       fitView
       attributionPosition="top-right"
@@ -127,4 +127,3 @@ export default () => (
     <SaveRestore />
   </ReactFlowProvider>
 );
-
