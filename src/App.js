@@ -1,4 +1,4 @@
-import React, {useState, useCallback } from "react";
+import React, {useState, useCallback, useRef } from "react";
 import ReactFlow, {
   addEdge,
   MiniMap,
@@ -31,14 +31,29 @@ const getNodeId = () => `randomnode_${+new Date()}`;
 
  
   const SaveRestore = () => {
+  const edgeUpdateSuccessful = useRef(true);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [rfInstance, setRfInstance] = useState(null);
+  const onConnect = useCallback((params) => setEdges((els) => addEdge(params, els)), []);
+ 
   const { setViewport } = useReactFlow();
-  const onEdgeUpdate = useCallback(
-    (oldEdge, newConnection) => setEdges((els) => updateEdge(oldEdge, newConnection, els)),
-    []
-  );
+  const onEdgeUpdateStart = useCallback(() => {
+    edgeUpdateSuccessful.current = false;
+  }, []);
+
+  const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
+    edgeUpdateSuccessful.current = true;
+    setEdges((els) => updateEdge(oldEdge, newConnection, els));
+  }, []);
+
+  const onEdgeUpdateEnd = useCallback((_, edge) => {
+    if (!edgeUpdateSuccessful.current) {
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+    }
+
+    edgeUpdateSuccessful.current = true;
+  }, []);
   const onInit = (reactFlowInstance) =>{
      setRfInstance(rfInstance);
     console.log("flow loaded:", reactFlowInstance);
@@ -78,10 +93,7 @@ const getNodeId = () => `randomnode_${+new Date()}`;
     };
     setNodes((nds) => nds.concat(newNode));
   }, [setNodes]);
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
+
 
   return (
     <ReactFlow
@@ -90,6 +102,8 @@ const getNodeId = () => `randomnode_${+new Date()}`;
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onEdgeUpdate={onEdgeUpdate}
+      onEdgeUpdateStart={onEdgeUpdateStart}
+      onEdgeUpdateEnd={onEdgeUpdateEnd}
       onConnect={onConnect}
       onInit={setRfInstance}
       nodeTypes={nodeTypes}
