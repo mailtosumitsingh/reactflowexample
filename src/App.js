@@ -16,7 +16,8 @@ import "./styles.css";
 import './text-updater-node.css';
 
 import TextUpdaterNode from './TextUpdaterNode.js';
-
+import DownloadButton from './DownloadButton.js';
+import SideBar from './SideBar.js';
 
 const nodeTypes = { textUpdater: TextUpdaterNode };
 const flowKey = 'example-flow';
@@ -26,11 +27,12 @@ import {
   edges as initialEdges
 } from "./initial-elements";
 
-const getNodeId = () => `randomnode_${+new Date()}`;
+const getNodeId = () => `addnode_${+new Date()}`;
 
 
  
   const SaveRestore = () => {
+  const reactFlowWrapper = useRef(true);
   const edgeUpdateSuccessful = useRef(true);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -42,6 +44,8 @@ const getNodeId = () => `randomnode_${+new Date()}`;
     edgeUpdateSuccessful.current = false;
   }, []);
 
+
+  const getId = () => `dndode_${+new Date()}`
   const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
     edgeUpdateSuccessful.current = true;
     setEdges((els) => updateEdge(oldEdge, newConnection, els));
@@ -55,7 +59,7 @@ const getNodeId = () => `randomnode_${+new Date()}`;
     edgeUpdateSuccessful.current = true;
   }, []);
   const onInit = (reactFlowInstance) =>{
-     setRfInstance(rfInstance);
+     setRfInstance(reactFlowInstance);
     console.log("flow loaded:", reactFlowInstance);
   }
   const onSave = useCallback(() => {
@@ -94,8 +98,42 @@ const getNodeId = () => `randomnode_${+new Date()}`;
     setNodes((nds) => nds.concat(newNode));
   }, [setNodes]);
 
+  const onDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const type = event.dataTransfer.getData('application/reactflow');
+
+      // check if the dropped element is valid
+      if (typeof type === 'undefined' || !type) {
+        return;
+      }
+
+      const position = rfInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+      const newNode = {
+        id: getId(),
+        type,
+        position,
+        data: { label: `${type} node` },
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [rfInstance]
+  );
 
   return (
+
+    <div className="reactflow-wrapper" ref={reactFlowWrapper}>
     <ReactFlow
       nodes={nodes}
       edges={edges}
@@ -107,6 +145,8 @@ const getNodeId = () => `randomnode_${+new Date()}`;
       onConnect={onConnect}
       onInit={setRfInstance}
       nodeTypes={nodeTypes}
+      onDrop={onDrop}
+      onDragOver={onDragOver}
       fitView
       attributionPosition="top-right"
     >
@@ -133,11 +173,16 @@ const getNodeId = () => `randomnode_${+new Date()}`;
         <button onClick={onRestore}>restore</button>
         <button onClick={onAdd}>add node</button>
       </Panel>
+      <DownloadButton/>
     </ReactFlow>
+    </div>
   );
 };
 export default () => (
-  <ReactFlowProvider>
+  <div className="dndflow">
+    <ReactFlowProvider>
     <SaveRestore />
+    <SideBar/>
   </ReactFlowProvider>
+  </div>
 );
