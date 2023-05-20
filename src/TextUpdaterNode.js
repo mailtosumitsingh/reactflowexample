@@ -13,7 +13,7 @@ function TextUpdaterNode({ data, isConnectable }) {
     
     <div className="text-updater-node">
        <NodeResizer minWidth={100} minHeight={30} />
-      <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
+      <Handle type="target" position={Position.Top} isConnectable={isConnectable} id="ina" />
       <div>
         <label htmlFor="text">Text:</label>
         <input id="text" name="text" onChange={onChange} className="nodrag" />

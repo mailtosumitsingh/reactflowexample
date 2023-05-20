@@ -18,8 +18,9 @@ import './text-updater-node.css';
 import TextUpdaterNode from './TextUpdaterNode.js';
 import DownloadButton from './DownloadButton.js';
 import SideBar from './SideBar.js';
+import DynaNode from './DynaNode.js';
 
-const nodeTypes = { textUpdater: TextUpdaterNode };
+const nodeTypes = { textUpdater: TextUpdaterNode,dynaNode:DynaNode };
 const flowKey = 'example-flow';
 
 import {
@@ -85,10 +86,7 @@ const getNodeId = () => `addnode_${+new Date()}`;
     restoreFlow();
   }, [setNodes, setViewport]);
 
-  const deleteNodeById = (id) => {
-    console.log("Deleting : "+id);
-    setNodes(nds => nds.filter(node => node.id !== id));
-  };
+
   const onAdd = useCallback(() => {
    const id = getNodeId();
     const newNode = {

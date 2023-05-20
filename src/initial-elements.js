@@ -79,6 +79,12 @@ export const nodes = [
     type: "textUpdater",
     data: { value: "Another output node" },
     position: { x: 400, y: 600 }
+  },
+  {
+    id: "9",
+    type: "dynaNode",
+    data: { "inputa": "a value","inputb":"b value",inputs:["a","b"] ,outputs:["c","d","e"]},
+    position: { x: 400, y: 600 }
   }
 ];
 
