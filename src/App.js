@@ -11,14 +11,16 @@ import ReactFlow, {
   Panel,
   ReactFlowProvider,
 } from "reactflow";
+import { toPng } from 'html-to-image';
 import "reactflow/dist/style.css";
 import "./styles.css";
 import './text-updater-node.css';
 
 import TextUpdaterNode from './TextUpdaterNode.js';
-import DownloadButton from './DownloadButton.js';
+
 import SideBar from './SideBar.js';
 import DynaNode from './DynaNode.js';
+import ProcessLibrary  from "./ProcessLibrary";
 
 const nodeTypes = { textUpdater: TextUpdaterNode,dynaNode:DynaNode };
 const flowKey = 'example-flow';
@@ -31,6 +33,13 @@ import {
 const getNodeId = () => `addnode_${+new Date()}`;
 
 
+function downloadImage(dataUrl) {
+  const a = document.createElement('a');
+
+  a.setAttribute('download', 'reactflow.png');
+  a.setAttribute('href', dataUrl);
+  a.click();
+}
  
   const SaveRestore = () => {
   const reactFlowWrapper = useRef(true);
@@ -133,6 +142,23 @@ const getNodeId = () => `addnode_${+new Date()}`;
     [rfInstance]
   );
 
+  const downloadImageBtnClick = () => {
+    toPng(document.querySelector('.react-flow'), {
+      filter: (node) => {
+        // we don't want to add the minimap and the controls to the image
+        if (
+          node?.classList?.contains('react-flow__minimap') ||
+          node?.classList?.contains('react-flow__controls')
+        ) {
+          return false;
+        }
+
+        return true;
+      },
+    }).then(downloadImage);
+  };
+
+
   return (
 
     <div className="reactflow-wrapper" ref={reactFlowWrapper}>
@@ -174,17 +200,19 @@ const getNodeId = () => `addnode_${+new Date()}`;
         <button onClick={onSave}>save</button>
         <button onClick={onRestore}>restore</button>
         <button onClick={onAdd}>add node</button>
+        <button onClick={downloadImageBtnClick}>DownloadImage</button>
       </Panel>
-      <DownloadButton/>
     </ReactFlow>
     </div>
   );
 };
 export default () => (
+
   <div className="dndflow">
     <ReactFlowProvider>
     <SaveRestore />
     <SideBar/>
   </ReactFlowProvider>
+  <ProcessLibrary/>
   </div>
 );
